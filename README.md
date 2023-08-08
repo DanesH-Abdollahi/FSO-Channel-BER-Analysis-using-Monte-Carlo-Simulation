@@ -23,21 +23,22 @@ Additionally, you have the option to investigate the impact of positional fluctu
 
 Upon executing the Monte Carlo simulation, a series of plots illustrating BER versus various parameters will be generated and saved in the `publish/` directory.
 
-### BER vs Transmission Power ( Weak Turbulence Scenario)
+### BER vs Transmission Power (Weak Turbulence Scenario)
 
 ![BER vs Transmission Power](publish/main_02.png)
 
-### BER vs Distance ( Weak Turbulence Scenario)
+### BER vs Distance (Weak Turbulence Scenario)
 
 ![BER vs Distance](publish/main_03.png)
 
-### BER vs Transmission Power ( Strong Turbulence Scenario)
+### BER vs Transmission Power (Strong Turbulence Scenario)
 
 ![BER vs Transmission Power](publish/main_04.png)
 
-### BER vs Distance ( Strong Turbulence Scenario)
+### BER vs Distance (Strong Turbulence Scenario)
 
 ![BER vs Distance](publish/main_05.png)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
