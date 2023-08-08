@@ -1,0 +1,633 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>main</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-02-14"><meta name="DC.source" content="main.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Constants</a></li><li><a href="#4">Initialization</a></li><li><a href="#5">Attenuation Effect</a></li><li><a href="#6">Pointing Error Effect</a></li><li><a href="#7">Turbulence Effect</a></li><li><a href="#8">AOA Effect</a></li><li><a href="#9">AWGN Effect</a></li><li><a href="#10">Main Simulation for Weak Turbulence</a></li><li><a href="#11">Main Simulation for Strong Turbulence</a></li><li><a href="#12">Functions</a></li></ul></div><pre class="codeinput"><span class="comment">% Danesh Abdollahi - 9723053 - Optical Communication Systems - Fall 2022</span>
+</pre><pre class="codeinput">clc; clear; close <span class="string">all</span>;
+</pre><h2 id="3">Constants</h2><pre class="codeinput">num_of_bits = 1e6 ;
+height = 50 ; <span class="comment">% height ( meter )</span>
+p_dB = 0 : 1 : 30 ; <span class="comment">% dbm</span>
+p = 10.^(p_dB ./ 10) * 1e-3 ; <span class="comment">% watt</span>
+distance = 500 : 250 : 2000 ; <span class="comment">% meter</span>
+distance = sqrt( distance.^2 + height^2 ) ;
+lambda = 1.55e-6; <span class="comment">% meter</span>
+k = (2*pi) / lambda; <span class="comment">% wave number</span>
+</pre><h2 id="4">Initialization</h2><pre class="codeinput">data = (randi( 2 , [1 , num_of_bits] ) - 1);
+transmitted_data = sqrt(p') .* data;  <span class="comment">% bit stream for different power</span>
+</pre><h2 id="5">Attenuation Effect</h2><pre class="codeinput">alpha = 0.2; <span class="comment">% 1/km</span>
+ha = sqrt( exp(-alpha .* distance * 1e-3) );
+</pre><h2 id="6">Pointing Error Effect</h2><pre class="codeinput">w0 = 0.02; <span class="comment">% meter = 2 cm</span>
+a  = 0.1;  <span class="comment">% meter = 10 cm</span>
+sigma_s = 0.3; <span class="comment">% meter = 30 cm</span>
+Cn = [1e-16, 1e-13]; <span class="comment">% refractive index structure for weak &amp; strong turbulence</span>
+
+<span class="comment">% for weak turbulence</span>
+p0_weak = (0.55 * Cn(1) * (k^2) .* distance).^ (-3/5); <span class="comment">% weak turbulence</span>
+theta_0_weak = 1 + (2 * w0^2) ./ (p0_weak.^2);
+wL_weak = w0 * sqrt( 1 + theta_0_weak .* (lambda .* distance ./ (pi .* w0^2)).^2 );
+v_weak = sqrt(pi / 2) * (a ./ wL_weak);
+A0_weak = abs(erf(v_weak)).^ 2;
+wLeq_2_weak = (wL_weak.^2) .* sqrt(pi) .* erf(v_weak) ./ ( 2 .* v_weak .* exp(-(v_weak.^2)));
+
+<span class="comment">% for string turbulence</span>
+p0_strong = (0.55 * Cn(2) * (k^2) .* distance).^ (-3/5); <span class="comment">% weak turbulence</span>
+theta_0_strong = 1 + (2 * w0^2) ./ (p0_strong.^2);
+wL_strong = w0 * sqrt( 1 + theta_0_strong .* (lambda .* distance ./ (pi .* w0^2)).^2 );
+v_strong = sqrt(pi / 2) * (a ./ wL_strong);
+A0_strong = abs(erf(v_strong)).^ 2;
+wLeq_2_strong = (wL_strong.^2) .* sqrt(pi) .* erf(v_strong) ./ ( 2 .* v_strong .* exp(-(v_strong.^2)));
+
+r = raylrnd(sigma_s, [1, num_of_bits]);
+</pre><h2 id="7">Turbulence Effect</h2><pre class="codeinput">step = 0.001;
+x = eps : step : 7;
+
+pdf1 = Gamma_Gamma(x, 11.6, 10.1);
+pdf2 = Gamma_Gamma(x, 4, 1.9);
+pdf3 = Gamma_Gamma(x, 4.2, 1.4);
+
+figure();
+subplot(2, 1, 1);
+plot(x, pdf1, LineWidth=1.5);
+hold <span class="string">on</span>;
+plot(x, pdf2, LineWidth=1.5, LineStyle=<span class="string">"--"</span>);
+hold <span class="string">on</span>;
+plot(x, pdf3, LineWidth=1.5, LineStyle=<span class="string">"-."</span>);
+grid <span class="string">minor</span>;
+legend(<span class="string">"Weak: \alpha = 11.6, \beta = 10.1"</span>,<span class="keyword">...</span>
+    <span class="string">"Moderate: \alpha = 4, \beta = 1.9"</span>,<span class="keyword">...</span>
+    <span class="string">"Strong: \alpha = 4.2, \beta = 1.4"</span>, Location=<span class="string">"best"</span>)
+title(<span class="string">"Gamma Gamma PDF"</span>);
+ylabel(<span class="string">"P(I)"</span>);
+xlabel(<span class="string">"Irradince"</span>);
+
+cdf1 = CDF_Gamma_Gamma(x, 11.6, 10.1);
+cdf2 = CDF_Gamma_Gamma(x, 4, 1.9);
+cdf3 = CDF_Gamma_Gamma(x, 4.2, 1.4);
+
+<span class="comment">% figure();</span>
+subplot(2, 1, 2);
+plot(x, cdf1, LineWidth=1.5);
+hold <span class="string">on</span>;
+plot(x, cdf2, LineWidth=1.5, LineStyle=<span class="string">"--"</span>);
+hold <span class="string">on</span>;
+plot(x, cdf3, LineWidth=1.5, LineStyle=<span class="string">"-."</span>);
+grid <span class="string">minor</span> ;
+legend(<span class="string">"Weak: \alpha = 11.6, \beta = 10.1"</span>,<span class="keyword">...</span>
+    <span class="string">"Moderate: \alpha = 4, \beta = 1.9"</span>,<span class="keyword">...</span>
+    <span class="string">"Strong: \alpha = 4.2, \beta = 1.4"</span>, Location=<span class="string">"best"</span>)
+title(<span class="string">"Gamma Gamma CDF"</span>);
+ylabel(<span class="string">"CDF(I)"</span>);
+xlabel(<span class="string">"Irradince"</span>);
+
+ht_weak   = GGrnd(num_of_bits, 11.6, 10.1); <span class="comment">% for weak turbulence</span>
+ht_strong = GGrnd(num_of_bits, 4.2, 1.4);   <span class="comment">% for strong turbulence</span>
+</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <h2 id="8">AOA Effect</h2><pre class="codeinput">sigma_to  = 5e-3;   <span class="comment">% rad</span>
+sigma_ro  = 5e-3;   <span class="comment">% rad</span>
+theta_FOV = 16e-3;  <span class="comment">% rad</span>
+theta_a = raylrnd(sqrt(sigma_to^2 + sigma_ro^2), [1, num_of_bits]);
+hpa = ones(1,num_of_bits);
+<span class="keyword">for</span> ii = 1 : num_of_bits
+    <span class="keyword">if</span> theta_a(ii) &gt; theta_FOV
+        hpa(ii) = 0;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="9">AWGN Effect</h2><pre class="codeinput">noise_var = 1e-14 ;
+noise = sqrt(noise_var) .* randn(1, num_of_bits);
+</pre><h2 id="10">Main Simulation for Weak Turbulence</h2><pre class="codeinput">figure();
+responsivity = 0.8 ;
+<span class="keyword">for</span> i = 1 : length(distance)
+    hp_weak = A0_weak(i) .* exp(-2 * (r.^2) ./ wLeq_2_weak(i));
+    received_data = transmitted_data .* ha(i) .* ht_weak .* hp_weak .* hpa + noise ;
+    electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+    detected_data = zeros(size(data));
+    <span class="comment">% Detection</span>
+    <span class="keyword">for</span> row = 1 : length(p)
+        threshold = sqrt(p(row)) / 2;
+        <span class="keyword">for</span> col = 1 : num_of_bits
+            <span class="keyword">if</span> electrical_signal(row, col)  &gt; threshold
+                detected_data(row, col) = 1;
+            <span class="keyword">else</span>
+                detected_data(row, col) = 0;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    error_count = sum(detected_data ~= data,2);
+    BER = error_count ./ num_of_bits;
+    plot(p_dB, BER, LineWidth=1.5, LineStyle=<span class="string">"-"</span>);
+    hold <span class="string">on</span>;
+<span class="keyword">end</span>
+grid <span class="string">minor</span>;
+title(<span class="string">"Bit Error Rate Evaluation for Weak Turbulence"</span>);
+ylabel(<span class="string">"BER"</span>);
+xlabel(<span class="string">"Transmission Power (dBm)"</span>);
+legend(<span class="string">"distance = "</span> + num2str( round(distance(1),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(2),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(3),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(4),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(5),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(6),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(7),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       Location=<span class="string">"best"</span>);
+annotation ( <span class="string">'textarrow'</span>, [0.6 .9], [0.4 .9]);
+
+figure();
+BER = zeros(1, length(distance));
+<span class="keyword">for</span> j = 10 : 5 :length(p)
+    <span class="keyword">for</span> k = 1 : length(distance)
+        hp_weak = A0_weak(k) .* exp(-2 * (r.^2) ./ wLeq_2_weak(k));
+        received_data = transmitted_data(j,:) .* ha(k) .* ht_weak .* hp_weak .* hpa + noise ;
+        electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+        detected_data = zeros(1, num_of_bits);
+        threshold = sqrt(p(j)) / 2;
+        <span class="comment">% Detection</span>
+        <span class="keyword">for</span> bit = 1 : num_of_bits
+            <span class="keyword">if</span> electrical_signal(bit)  &gt; threshold
+                detected_data(bit) = 1;
+            <span class="keyword">else</span>
+                detected_data(bit) = 0;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        error_count = sum(detected_data ~= data);
+        BER(k) = error_count ./ num_of_bits;
+    <span class="keyword">end</span>
+    plot(distance * 1e-3 , BER, LineWidth=1.5, LineStyle=<span class="string">"-"</span>);
+    hold <span class="string">on</span>;
+<span class="keyword">end</span>
+grid <span class="string">minor</span>;
+title(<span class="string">"Bit Error Rate Evaluation for Weak Turbulence"</span>);
+ylabel(<span class="string">"BER"</span>);
+xlabel(<span class="string">"distance (km)"</span>);
+legend(<span class="string">"Power = "</span> + num2str( p_dB(11)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(16)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(21)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(26)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(31)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       Location=<span class="string">"best"</span>);
+</pre><img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <h2 id="11">Main Simulation for Strong Turbulence</h2><pre class="codeinput">figure();
+responsivity = 0.8 ;
+<span class="keyword">for</span> i = 1 : length(distance)
+    hp_strong = A0_strong(i) .* exp(-2 * (r.^2) ./ wLeq_2_strong(i));
+    received_data = transmitted_data .* ha(i) .* ht_strong .* hp_strong .* hpa + noise ;
+    electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+    detected_data = zeros(size(data));
+    <span class="comment">% Detection</span>
+    <span class="keyword">for</span> row = 1 : length(p)
+        threshold = sqrt(p(row)) / 2;
+        <span class="keyword">for</span> col = 1 : num_of_bits
+            <span class="keyword">if</span> electrical_signal(row, col)  &gt; threshold
+                detected_data(row, col) = 1;
+            <span class="keyword">else</span>
+                detected_data(row, col) = 0;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    error_count = sum(detected_data ~= data,2);
+    BER = error_count ./ num_of_bits;
+    plot(p_dB, BER, LineWidth=1.5, LineStyle=<span class="string">"-"</span>);
+    hold <span class="string">on</span>;
+<span class="keyword">end</span>
+grid <span class="string">minor</span>;
+title(<span class="string">"Bit Error Rate Evaluation for Strong Turbulence"</span>);
+ylabel(<span class="string">"BER"</span>);
+xlabel(<span class="string">"Transmission Power (dBm)"</span>);
+legend(<span class="string">"distance = "</span> + num2str( round(distance(1),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(2),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(3),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(4),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(5),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(6),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       <span class="string">"distance = "</span> + num2str( round(distance(7),1)) + <span class="string">" m"</span>,<span class="keyword">...</span>
+       Location=<span class="string">"best"</span>);
+annotation ( <span class="string">'textarrow'</span>, [0.6 .75], [0.4 .9]);
+
+figure();
+BER = zeros(1, length(distance));
+<span class="keyword">for</span> j = 11 : 5 : length(p)
+    <span class="keyword">for</span> k = 1 : length(distance)
+        hp_strong = A0_strong(k) .* exp(-2 * (r.^2) ./ wLeq_2_strong(k));
+        received_data = transmitted_data(j,:) .* ha(k) .* ht_strong .* hp_strong .* hpa + noise ;
+        electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+        detected_data = zeros(1, num_of_bits);
+        threshold = sqrt(p(j)) / 2;
+        <span class="comment">% Detection</span>
+        <span class="keyword">for</span> bit = 1 : num_of_bits
+            <span class="keyword">if</span> electrical_signal(bit)  &gt; threshold
+                detected_data(bit) = 1;
+            <span class="keyword">else</span>
+                detected_data(bit) = 0;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        error_count = sum(detected_data ~= data);
+        BER(k) = error_count ./ num_of_bits;
+    <span class="keyword">end</span>
+    plot(distance * 1e-3, BER, LineWidth=1.5, LineStyle=<span class="string">"-"</span>);
+    hold <span class="string">on</span>;
+<span class="keyword">end</span>
+grid <span class="string">minor</span>;
+title(<span class="string">"Bit Error Rate Evaluation for Strong Turbulence"</span>);
+ylabel(<span class="string">"BER"</span>);
+xlabel(<span class="string">"distance (km)"</span>);
+legend(<span class="string">"Power = "</span> + num2str( p_dB(11)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(16)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(21)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(26)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       <span class="string">"Power = "</span> + num2str( p_dB(31)) + <span class="string">" dBm"</span>,<span class="keyword">...</span>
+       Location=<span class="string">"best"</span>);
+</pre><img vspace="5" hspace="5" src="main_04.png" alt=""> <img vspace="5" hspace="5" src="main_05.png" alt=""> <h2 id="12">Functions</h2><pre class="codeinput"><span class="keyword">function</span> y = Gamma_Gamma(period, alpha, beta)
+
+y = zeros(1, length(period));
+<span class="keyword">for</span> i = 1 : length(period)
+    y(i) = 2 * ((alpha*beta)^((alpha+beta)/2)) * period(i)^((alpha+beta)/2 - 1) <span class="keyword">...</span>
+        * besselk(alpha-beta, 2*sqrt(alpha*beta*period(i))) / (gamma(alpha) * gamma(beta)) ;
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> y = CDF_Gamma_Gamma(period, alpha, beta)
+
+pdf = Gamma_Gamma(period, alpha, beta);
+y = zeros(1, length(period));
+
+<span class="keyword">for</span> i = 2 : length(period)
+    y(i) = trapz(period(1:i), pdf(1:i), 2);
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> y = GGrnd(size, alpha, beta)
+
+period = eps : 0.001 : 7;
+cdf = CDF_Gamma_Gamma(period, alpha, beta);
+
+rnd_num = rand(1, size);
+y = zeros(1, size);
+
+<span class="keyword">for</span> i = 1 : size
+    y(i) = period( find(abs(cdf-rnd_num(i)) &lt; 1e-2 , 1, <span class="string">"first"</span> ) );
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Danesh Abdollahi - 9723053 - Optical Communication Systems - Fall 2022
+%%
+clc; clear; close all;
+
+%% Constants
+num_of_bits = 1e6 ;
+height = 50 ; % height ( meter )
+p_dB = 0 : 1 : 30 ; % dbm
+p = 10.^(p_dB ./ 10) * 1e-3 ; % watt
+distance = 500 : 250 : 2000 ; % meter
+distance = sqrt( distance.^2 + height^2 ) ;
+lambda = 1.55e-6; % meter
+k = (2*pi) / lambda; % wave number
+
+%% Initialization
+data = (randi( 2 , [1 , num_of_bits] ) - 1);
+transmitted_data = sqrt(p') .* data;  % bit stream for different power
+
+%% Attenuation Effect
+alpha = 0.2; % 1/km
+ha = sqrt( exp(-alpha .* distance * 1e-3) );
+
+%% Pointing Error Effect
+w0 = 0.02; % meter = 2 cm
+a  = 0.1;  % meter = 10 cm
+sigma_s = 0.3; % meter = 30 cm
+Cn = [1e-16, 1e-13]; % refractive index structure for weak & strong turbulence
+
+% for weak turbulence
+p0_weak = (0.55 * Cn(1) * (k^2) .* distance).^ (-3/5); % weak turbulence
+theta_0_weak = 1 + (2 * w0^2) ./ (p0_weak.^2);
+wL_weak = w0 * sqrt( 1 + theta_0_weak .* (lambda .* distance ./ (pi .* w0^2)).^2 );
+v_weak = sqrt(pi / 2) * (a ./ wL_weak);
+A0_weak = abs(erf(v_weak)).^ 2;
+wLeq_2_weak = (wL_weak.^2) .* sqrt(pi) .* erf(v_weak) ./ ( 2 .* v_weak .* exp(-(v_weak.^2)));
+
+% for string turbulence
+p0_strong = (0.55 * Cn(2) * (k^2) .* distance).^ (-3/5); % weak turbulence
+theta_0_strong = 1 + (2 * w0^2) ./ (p0_strong.^2);
+wL_strong = w0 * sqrt( 1 + theta_0_strong .* (lambda .* distance ./ (pi .* w0^2)).^2 );
+v_strong = sqrt(pi / 2) * (a ./ wL_strong);
+A0_strong = abs(erf(v_strong)).^ 2;
+wLeq_2_strong = (wL_strong.^2) .* sqrt(pi) .* erf(v_strong) ./ ( 2 .* v_strong .* exp(-(v_strong.^2)));
+
+r = raylrnd(sigma_s, [1, num_of_bits]);
+
+%% Turbulence Effect
+step = 0.001;
+x = eps : step : 7;
+
+pdf1 = Gamma_Gamma(x, 11.6, 10.1); 
+pdf2 = Gamma_Gamma(x, 4, 1.9);
+pdf3 = Gamma_Gamma(x, 4.2, 1.4);
+
+figure();
+subplot(2, 1, 1);
+plot(x, pdf1, LineWidth=1.5);
+hold on;
+plot(x, pdf2, LineWidth=1.5, LineStyle="REPLACE_WITH_DASH_DASH");
+hold on;
+plot(x, pdf3, LineWidth=1.5, LineStyle="-.");
+grid minor;
+legend("Weak: \alpha = 11.6, \beta = 10.1",...
+    "Moderate: \alpha = 4, \beta = 1.9",...
+    "Strong: \alpha = 4.2, \beta = 1.4", Location="best")
+title("Gamma Gamma PDF");
+ylabel("P(I)");
+xlabel("Irradince");
+
+cdf1 = CDF_Gamma_Gamma(x, 11.6, 10.1);
+cdf2 = CDF_Gamma_Gamma(x, 4, 1.9);
+cdf3 = CDF_Gamma_Gamma(x, 4.2, 1.4);
+
+% figure();
+subplot(2, 1, 2);
+plot(x, cdf1, LineWidth=1.5);
+hold on;
+plot(x, cdf2, LineWidth=1.5, LineStyle="REPLACE_WITH_DASH_DASH");
+hold on;
+plot(x, cdf3, LineWidth=1.5, LineStyle="-.");
+grid minor ;
+legend("Weak: \alpha = 11.6, \beta = 10.1",...
+    "Moderate: \alpha = 4, \beta = 1.9",...
+    "Strong: \alpha = 4.2, \beta = 1.4", Location="best")
+title("Gamma Gamma CDF");
+ylabel("CDF(I)");
+xlabel("Irradince");
+
+ht_weak   = GGrnd(num_of_bits, 11.6, 10.1); % for weak turbulence
+ht_strong = GGrnd(num_of_bits, 4.2, 1.4);   % for strong turbulence
+
+%% AOA Effect
+sigma_to  = 5e-3;   % rad
+sigma_ro  = 5e-3;   % rad
+theta_FOV = 16e-3;  % rad
+theta_a = raylrnd(sqrt(sigma_to^2 + sigma_ro^2), [1, num_of_bits]);
+hpa = ones(1,num_of_bits);
+for ii = 1 : num_of_bits
+    if theta_a(ii) > theta_FOV
+        hpa(ii) = 0;
+    end
+end
+
+%% AWGN Effect
+noise_var = 1e-14 ; 
+noise = sqrt(noise_var) .* randn(1, num_of_bits);
+
+%% Main Simulation for Weak Turbulence
+figure();
+responsivity = 0.8 ;
+for i = 1 : length(distance)
+    hp_weak = A0_weak(i) .* exp(-2 * (r.^2) ./ wLeq_2_weak(i));
+    received_data = transmitted_data .* ha(i) .* ht_weak .* hp_weak .* hpa + noise ;
+    electrical_signal = responsivity .* abs(received_data).^ 2 ;
+    
+    detected_data = zeros(size(data));
+    % Detection
+    for row = 1 : length(p)
+        threshold = sqrt(p(row)) / 2;
+        for col = 1 : num_of_bits
+            if electrical_signal(row, col)  > threshold
+                detected_data(row, col) = 1;
+            else
+                detected_data(row, col) = 0;
+            end
+        end
+    end
+    error_count = sum(detected_data ~= data,2);
+    BER = error_count ./ num_of_bits;
+    plot(p_dB, BER, LineWidth=1.5, LineStyle="-");
+    hold on;
+end
+grid minor;
+title("Bit Error Rate Evaluation for Weak Turbulence");
+ylabel("BER");
+xlabel("Transmission Power (dBm)");
+legend("distance = " + num2str( round(distance(1),1)) + " m",...
+       "distance = " + num2str( round(distance(2),1)) + " m",...
+       "distance = " + num2str( round(distance(3),1)) + " m",...
+       "distance = " + num2str( round(distance(4),1)) + " m",...
+       "distance = " + num2str( round(distance(5),1)) + " m",...
+       "distance = " + num2str( round(distance(6),1)) + " m",...
+       "distance = " + num2str( round(distance(7),1)) + " m",...
+       Location="best");
+annotation ( 'textarrow', [0.6 .9], [0.4 .9]);
+
+figure();
+BER = zeros(1, length(distance));
+for j = 10 : 5 :length(p)
+    for k = 1 : length(distance)
+        hp_weak = A0_weak(k) .* exp(-2 * (r.^2) ./ wLeq_2_weak(k));
+        received_data = transmitted_data(j,:) .* ha(k) .* ht_weak .* hp_weak .* hpa + noise ;
+        electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+        detected_data = zeros(1, num_of_bits);
+        threshold = sqrt(p(j)) / 2;
+        % Detection
+        for bit = 1 : num_of_bits
+            if electrical_signal(bit)  > threshold
+                detected_data(bit) = 1;
+            else
+                detected_data(bit) = 0;
+            end
+        end
+        error_count = sum(detected_data ~= data);
+        BER(k) = error_count ./ num_of_bits;
+    end
+    plot(distance * 1e-3 , BER, LineWidth=1.5, LineStyle="-");
+    hold on;
+end
+grid minor;
+title("Bit Error Rate Evaluation for Weak Turbulence");
+ylabel("BER");
+xlabel("distance (km)");
+legend("Power = " + num2str( p_dB(11)) + " dBm",...
+       "Power = " + num2str( p_dB(16)) + " dBm",...
+       "Power = " + num2str( p_dB(21)) + " dBm",...
+       "Power = " + num2str( p_dB(26)) + " dBm",...
+       "Power = " + num2str( p_dB(31)) + " dBm",...
+       Location="best");
+
+%% Main Simulation for Strong Turbulence
+figure();
+responsivity = 0.8 ;
+for i = 1 : length(distance)
+    hp_strong = A0_strong(i) .* exp(-2 * (r.^2) ./ wLeq_2_strong(i));
+    received_data = transmitted_data .* ha(i) .* ht_strong .* hp_strong .* hpa + noise ;
+    electrical_signal = responsivity .* abs(received_data).^ 2 ;
+    
+    detected_data = zeros(size(data));
+    % Detection
+    for row = 1 : length(p)
+        threshold = sqrt(p(row)) / 2;
+        for col = 1 : num_of_bits
+            if electrical_signal(row, col)  > threshold
+                detected_data(row, col) = 1;
+            else
+                detected_data(row, col) = 0;
+            end
+        end
+    end
+    error_count = sum(detected_data ~= data,2);
+    BER = error_count ./ num_of_bits;
+    plot(p_dB, BER, LineWidth=1.5, LineStyle="-");
+    hold on;
+end
+grid minor;
+title("Bit Error Rate Evaluation for Strong Turbulence");
+ylabel("BER");
+xlabel("Transmission Power (dBm)");
+legend("distance = " + num2str( round(distance(1),1)) + " m",...
+       "distance = " + num2str( round(distance(2),1)) + " m",...
+       "distance = " + num2str( round(distance(3),1)) + " m",...
+       "distance = " + num2str( round(distance(4),1)) + " m",...
+       "distance = " + num2str( round(distance(5),1)) + " m",...
+       "distance = " + num2str( round(distance(6),1)) + " m",...
+       "distance = " + num2str( round(distance(7),1)) + " m",...
+       Location="best");
+annotation ( 'textarrow', [0.6 .75], [0.4 .9]);
+
+figure();
+BER = zeros(1, length(distance));
+for j = 11 : 5 : length(p)
+    for k = 1 : length(distance)
+        hp_strong = A0_strong(k) .* exp(-2 * (r.^2) ./ wLeq_2_strong(k));
+        received_data = transmitted_data(j,:) .* ha(k) .* ht_strong .* hp_strong .* hpa + noise ;
+        electrical_signal = responsivity .* abs(received_data).^ 2 ;
+
+        detected_data = zeros(1, num_of_bits);
+        threshold = sqrt(p(j)) / 2;
+        % Detection
+        for bit = 1 : num_of_bits
+            if electrical_signal(bit)  > threshold
+                detected_data(bit) = 1;
+            else
+                detected_data(bit) = 0;
+            end
+        end
+        error_count = sum(detected_data ~= data);
+        BER(k) = error_count ./ num_of_bits;
+    end
+    plot(distance * 1e-3, BER, LineWidth=1.5, LineStyle="-");
+    hold on;
+end
+grid minor;
+title("Bit Error Rate Evaluation for Strong Turbulence");
+ylabel("BER");
+xlabel("distance (km)");
+legend("Power = " + num2str( p_dB(11)) + " dBm",...
+       "Power = " + num2str( p_dB(16)) + " dBm",...
+       "Power = " + num2str( p_dB(21)) + " dBm",...
+       "Power = " + num2str( p_dB(26)) + " dBm",...
+       "Power = " + num2str( p_dB(31)) + " dBm",...
+       Location="best");
+
+%% Functions
+
+function y = Gamma_Gamma(period, alpha, beta)
+
+y = zeros(1, length(period));
+for i = 1 : length(period)
+    y(i) = 2 * ((alpha*beta)^((alpha+beta)/2)) * period(i)^((alpha+beta)/2 - 1) ...
+        * besselk(alpha-beta, 2*sqrt(alpha*beta*period(i))) / (gamma(alpha) * gamma(beta)) ;
+end
+
+end
+
+function y = CDF_Gamma_Gamma(period, alpha, beta)
+
+pdf = Gamma_Gamma(period, alpha, beta);
+y = zeros(1, length(period));
+
+for i = 2 : length(period)
+    y(i) = trapz(period(1:i), pdf(1:i), 2);
+end
+
+end
+
+function y = GGrnd(size, alpha, beta)
+
+period = eps : 0.001 : 7;
+cdf = CDF_Gamma_Gamma(period, alpha, beta);
+
+rnd_num = rand(1, size);
+y = zeros(1, size);
+
+for i = 1 : size
+    y(i) = period( find(abs(cdf-rnd_num(i)) < 1e-2 , 1, "first" ) );
+end
+
+end
+##### SOURCE END #####
+--></body></html>
